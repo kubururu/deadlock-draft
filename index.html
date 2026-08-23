@@ -140,14 +140,22 @@
             overflow-y: auto;
         }
 
+        /* Specjalne formatowanie dla drużyn - Max 3 w rzędzie */
+        #drop-hk .player-token,
+        #drop-am .player-token {
+            flex: 0 0 calc((100% - 20px) / 3); /* 3 na rząd, 2 przerwy po 10px */
+            max-width: calc((100% - 20px) / 3);
+        }
+
+        /* Formatowanie dla Spectatorów - 6 w rzędzie */
+        #drop-spec .player-token {
+            flex: 0 0 calc((100% - 50px) / 6);
+            max-width: calc((100% - 50px) / 6);
+        }
+
         .player-token {
             background: rgba(30, 30, 30, 0.95);
             border: 2px solid #555;
-            
-            /* Dokładne wyliczenie szerokości: 6 elementów w rzędzie */
-            flex: 0 0 calc((100% - 50px) / 6);
-            max-width: calc((100% - 50px) / 6);
-            
             padding: 18px 5px;
             border-radius: 8px;
             cursor: grab;
@@ -159,11 +167,12 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: transform 0.1s;
+            transition: transform 0.1s, border-color 0.3s, color 0.3s;
             
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: white; /* Domyślny biały */
         }
 
         .player-token:active {
@@ -172,14 +181,25 @@
         }
         
         .player-token.captain {
-            border-color: #ffd700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-            color: #ffd700;
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+            color: #ffd700 !important;
         }
 
         .player-token.captain::before {
             content: '⭐';
             font-size: 1.2rem;
+        }
+        
+        /* Kolory dla poszczególnych drużyn (zastosowane gdy gracz NIE jest kapitanem) */
+        .hk-player:not(.captain) {
+            color: #ff4d4d; /* Przykładowy czerwony dla Hidden King */
+            border-color: #ff4d4d;
+        }
+        
+        .am-player:not(.captain) {
+            color: #4da6ff; /* Przykładowy niebieski dla Archmother */
+            border-color: #4da6ff;
         }
 
         /* --- MODALE --- */
@@ -552,6 +572,9 @@
             token.ondragstart = drag;
             
             document.getElementById('drop-spec').appendChild(token);
+            
+            // Zawsze upewnij się, że kolory są wyczyszczone przy dodaniu
+            updatePlayerColor(token, 'drop-spec');
 
             input.value = '';
             input.focus();
@@ -559,16 +582,13 @@
         }
 
         function removePlayer(playerId) {
-            // Usunięcie z tablicy w kodzie
             players = players.filter(p => p.id !== playerId);
             
-            // Usunięcie div-a (tokenu) gracza z głównej mapy
             const tokenElement = document.getElementById(playerId);
             if (tokenElement) {
                 tokenElement.remove();
             }
             
-            // Odświeżenie list w modalach
             updateModalLists();
         }
 
@@ -580,7 +600,6 @@
             capList.innerHTML = '';
 
             players.forEach(p => {
-                // Generowanie w "Dodaj zawodników" (Z przyciskiem usuwania)
                 const itemAdd = document.createElement('div');
                 itemAdd.className = 'players-list-item';
                 
@@ -597,7 +616,6 @@
                 itemAdd.appendChild(delBtn);
                 addList.appendChild(itemAdd);
                 
-                // Generowanie w "Wylosuj kapitanów" (Bez przycisku usuwania)
                 const itemCap = document.createElement('div');
                 itemCap.className = 'players-list-item';
                 itemCap.innerText = p.name;
@@ -641,7 +659,6 @@
             
             resultText.innerText = '';
             
-            // Restart animacji
             coin.classList.remove('spin-fast');
             wrapper.classList.remove('toss-up');
             void coin.offsetWidth; 
@@ -649,7 +666,6 @@
             coin.classList.add('spin-fast');
             wrapper.classList.add('toss-up');
 
-            // Cykliczna zmiana obrazka
             swapInterval = setInterval(() => {
                 const currentBg = coin.style.backgroundImage;
                 if (currentBg.includes('orzel')) {
@@ -663,7 +679,6 @@
             const resultImg = isHeads ? 'orzel.png' : 'reszka.png';
             const resultStr = isHeads ? 'ORZEŁ' : 'RESZKA';
 
-            // Koniec rzutu
             setTimeout(() => {
                 clearInterval(swapInterval);
                 coin.classList.remove('spin-fast');
@@ -685,6 +700,18 @@
         function allowDrop(ev) {
             ev.preventDefault();
         }
+        
+        function updatePlayerColor(element, dropzoneId) {
+            // Czyszczenie starych klas
+            element.classList.remove('hk-player', 'am-player');
+            
+            // Aplikowanie nowej klasy w zależności od dropzone
+            if (dropzoneId === 'drop-hk') {
+                element.classList.add('hk-player');
+            } else if (dropzoneId === 'drop-am') {
+                element.classList.add('am-player');
+            }
+        }
 
         function drop(ev) {
             ev.preventDefault();
@@ -694,6 +721,7 @@
             const dropzone = ev.target.closest('.dropzone');
             if (dropzone && draggedEl) {
                 dropzone.appendChild(draggedEl);
+                updatePlayerColor(draggedEl, dropzone.id);
             }
         }
 
@@ -704,7 +732,7 @@
             const specDrop = document.getElementById('drop-spec');
             
             tokens.forEach(token => {
-                token.classList.remove('captain');
+                token.classList.remove('captain', 'hk-player', 'am-player');
                 specDrop.appendChild(token);
             });
 
