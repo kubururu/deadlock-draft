@@ -142,6 +142,7 @@
 
         #coin-result-text, .casino-msg { height: 40px; margin-top: 20px; font-size: 28px; font-weight: bold; color: #ffd700; text-transform: uppercase; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .coin-footer { display: flex; justify-content: center; margin-top: 10px; border-top: 2px solid #444; padding-top: 20px; width: 100%; }
+
     </style>
 </head>
 <body>
@@ -151,7 +152,6 @@
         <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> dodaj zawodników</div>
         <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> wylosuj kapitanów</div>
         <div class="menu-btn" onclick="openModal('modal-coinflip')"><span class="icon">🪙</span> coin flip</div>
-        <!-- Nowy przycisk KASYNO -->
         <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> kasyno</div>
         <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> reset</div>
     </div>
@@ -179,12 +179,17 @@
     
     <!-- Modal: Dodaj zawodników -->
     <div class="modal-overlay" id="modal-add" onclick="closeOnOutside(event)">
-        <div class="modal-box">
+        <div class="modal-box" style="height: 550px;">
             <div class="modal-close" onclick="closeModal('modal-add')">&times;</div>
             <div class="players-list-container" id="added-players-list"></div>
             <div class="modal-footer">
-                <input type="text" id="player-input" class="input-box" placeholder="" onkeypress="handleEnter(event)">
+                <input type="text" id="player-input" class="input-box" placeholder="Dodaj gracza..." onkeypress="handleEnter(event)">
                 <button class="btn-box" onclick="addPlayer()">dodaj</button>
+            </div>
+            <!-- NOWE PRZYCISKI IMPORT / EXPORT -->
+            <div style="display: flex; gap: 15px; margin-top: 15px;">
+                <button class="btn-box" style="flex: 1; font-size: 16px; padding: 10px; border-color: #ffd700; color: #ffd700;" onclick="exportPlayers()">Eksportuj (Kopiuj)</button>
+                <button class="btn-box" style="flex: 1; font-size: 16px; padding: 10px; border-color: #00ff88; color: #00ff88;" onclick="importPlayers()">Importuj (Wklej)</button>
             </div>
         </div>
     </div>
@@ -223,24 +228,20 @@
         <div class="modal-box casino-box">
             <div class="modal-close" onclick="closeModal('modal-casino')">&times;</div>
             
-            <!-- Casino Header & Wallet -->
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #444; padding-bottom: 15px; margin-bottom: 20px;">
                 <h2 style="font-size: 28px; margin: 0; color: #ffd700; letter-spacing: 2px;">KASYNO</h2>
                 <div style="display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: bold;">
-                    <!-- Ikonka Dusz -->
                     <img src="icon_soul.png" style="width: 30px; height: 30px; object-fit: contain;" alt="D" onerror="this.style.display='none'">
                     <span id="wallet-balance" style="color: #00ff88;">1000</span>
                 </div>
             </div>
             
-            <!-- Casino Tabs -->
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button class="btn-box tab-btn active" id="tabbtn-slots" onclick="switchCasinoTab('slots')" style="padding: 10px 20px;">Sloty</button>
                 <button class="btn-box tab-btn" id="tabbtn-roulette" onclick="switchCasinoTab('roulette')" style="padding: 10px 20px;">Ruletka</button>
                 <button class="btn-box tab-btn" id="tabbtn-blackjack" onclick="switchCasinoTab('blackjack')" style="padding: 10px 20px;">Blackjack</button>
             </div>
 
-            <!-- Global Bet Controls -->
             <div style="background: #2a2a32; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 18px; font-weight: bold;">Stawka: <span id="current-bet-display" style="color:#ffd700; margin-left: 5px; font-size: 22px;">10</span></span>
                 <div style="flex:1;"></div>
@@ -265,13 +266,11 @@
                 <button class="btn-box" style="width: 250px; background-color: #ffd700; color: #000;" onclick="playSlots()">ZAKRĘĆ</button>
             </div>
 
-            <!-- TAB 2: ROULETTE (ZMIENIONA NA PASEK) -->
+            <!-- TAB 2: ROULETTE -->
             <div id="casino-tab-roulette" class="casino-tab">
                 <div class="roulette-container" id="roulette-container">
                     <div class="roulette-selector"></div>
-                    <div class="roulette-track" id="roulette-track">
-                        <!-- Pasek generowany przez JS -->
-                    </div>
+                    <div class="roulette-track" id="roulette-track"></div>
                 </div>
                 
                 <div class="casino-msg" id="roulette-msg" style="margin-bottom: 20px; font-size: 22px;">Wybierz na kogo stawiasz</div>
@@ -301,7 +300,6 @@
                     <button class="btn-box" id="btn-bj-stand" style="display: none; background-color: #ff4d4d;" onclick="standBlackjack()">CZEKAJ (STAND)</button>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -352,9 +350,9 @@
         // --- Logika Graczy (Draft) ---
         function handleEnter(e) { if(e.key === 'Enter') addPlayer(); }
 
-        function addPlayer() {
+        function addPlayer(customName = null) {
             const input = document.getElementById('player-input');
-            const name = input.value.trim();
+            const name = customName !== null ? customName : input.value.trim();
             if(!name) return;
 
             const playerId = 'player-' + playerCounter++;
@@ -380,7 +378,6 @@
             const tokenElement = document.getElementById(playerId);
             if (tokenElement) tokenElement.remove();
             
-            // Jeśli usunięty gracz był kapitanem, odznacz w ui
             const activeCaptainTokens = document.querySelectorAll('.player-token.captain');
             if (activeCaptainTokens.length < 2) {
                 activeCaptainTokens.forEach(el => el.classList.remove('captain'));
@@ -392,13 +389,10 @@
             updateModalLists();
         }
 
-        // NOWA FUNKCJA REROLL
         function rerollPlayer(playerId) {
-            // Znajdź indeks gracza
             const playerIndex = players.findIndex(p => p.id === playerId);
             if (playerIndex === -1) return;
             
-            // Znajdź wszystkich dostępnych, nieskapitanowanych graczy
             const availablePlayers = players.filter(p => !p.isCaptain && p.id !== playerId);
             
             if (availablePlayers.length === 0) {
@@ -406,11 +400,9 @@
                 return;
             }
             
-            // Wylosuj nowego kapitana z puli dostępnych
             const newCaptainIndex = Math.floor(Math.random() * availablePlayers.length);
             const newCaptain = availablePlayers[newCaptainIndex];
             
-            // Odznacz starego, zaznacz nowego
             players[playerIndex].isCaptain = false;
             
             const newCaptainInMainArray = players.find(p => p.id === newCaptain.id);
@@ -418,11 +410,9 @@
                 newCaptainInMainArray.isCaptain = true;
             }
             
-            // Zaktualizuj UI na planszy
             document.getElementById(playerId).classList.remove('captain');
             document.getElementById(newCaptain.id).classList.add('captain');
             
-            // Zaktualizuj UI w slotach modalu
             const cap1Slot = document.getElementById('cap1-slot');
             const cap2Slot = document.getElementById('cap2-slot');
             
@@ -435,13 +425,44 @@
             updateModalLists();
         }
 
+        // --- IMPORT / EXPORT ---
+        function exportPlayers() {
+            if(players.length === 0) {
+                alert("Brak zawodników do wyeksportowania!");
+                return;
+            }
+            const playerNames = players.map(p => p.name).join(', ');
+            navigator.clipboard.writeText(playerNames).then(() => {
+                alert("Lista zawodników skopiowana do schowka!\n\n" + playerNames);
+            }).catch(err => {
+                // Fallback dla przeglądarek blokujących schowek
+                prompt("Kopiuj listę ręcznie:", playerNames);
+            });
+        }
+
+        function importPlayers() {
+            const inputStr = prompt("Wklej listę zawodników oddzielonych przecinkami (np. Tagoz1, Tagoz2, Tagoz3):");
+            if(!inputStr) return;
+            
+            const names = inputStr.split(',').map(n => n.trim()).filter(n => n.length > 0);
+            let addedCount = 0;
+            
+            names.forEach(name => {
+                addPlayer(name);
+                addedCount++;
+            });
+            
+            if(addedCount > 0) {
+                alert("Pomyślnie zaimportowano " + addedCount + " zawodników!");
+            }
+        }
+
         function updateModalLists() {
             const addList = document.getElementById('added-players-list');
             const capList = document.getElementById('available-players-list');
             addList.innerHTML = ''; capList.innerHTML = '';
 
             players.forEach(p => {
-                // Dodawanie w "Dodaj zawodników"
                 const itemAdd = document.createElement('div');
                 itemAdd.className = 'players-list-item';
                 
@@ -458,7 +479,6 @@
                 itemAdd.appendChild(delBtn);
                 addList.appendChild(itemAdd);
                 
-                // Dodawanie w "Wylosuj kapitanów"
                 const itemCap = document.createElement('div');
                 itemCap.className = 'players-list-item';
                 
@@ -468,7 +488,6 @@
                 
                 itemCap.appendChild(nameSpanCap);
                 
-                // Pokaż ikonkę rerolla tylko dla obecnych kapitanów
                 if(p.isCaptain) {
                     const rerollBtn = document.createElement('button');
                     rerollBtn.className = 'reroll-btn';
@@ -503,7 +522,7 @@
             updateModalLists();
         }
 
-        // --- Rzut Monetą (Coinflip) ---
+        // --- Rzut Monetą ---
         let isFlipping = false;
         let swapInterval = null;
 
@@ -622,7 +641,6 @@
             document.getElementById('current-bet-display').innerText = currentBet;
         }
 
-        // --- KASYNO: SLOTS ---
         const slotImages = ['slot_soul.png', 'slot_trooper.png', 'slot_urn.png', 'slot_box.png', 'slot_midboss.png', 'slot_rejuv.png', 'slot_seven.png'];
         const slotMultipliers = [4, 10, 25, 75, 250, 1000, 10000];
         const slotWeights = [50, 25, 12, 7, 4, 1.5, 0.5];
@@ -679,7 +697,6 @@
             }, 100);
         }
 
-        // --- KASYNO: RULETKA (HORIZONTALNA) ---
         let rouletteArray = [];
         const itemWidth = 80;
 
