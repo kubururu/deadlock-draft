@@ -233,6 +233,8 @@
                 <div style="display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: bold;">
                     <img src="icon_soul.png" style="width: 30px; height: 30px; object-fit: contain;" alt="D" onerror="this.style.display='none'">
                     <span id="wallet-balance" style="color: #00ff88;">1000</span>
+                    <!-- Przycisk Buy-in ukryty domyślnie -->
+                    <button id="buy-in-btn" class="btn-box" style="display: none; padding: 5px 15px; font-size: 16px; background-color: #ffd700; color: #000; border-color: #ffd700; margin-left: 10px;" onclick="buyIn()">Buy in</button>
                 </div>
             </div>
             
@@ -435,7 +437,6 @@
             navigator.clipboard.writeText(playerNames).then(() => {
                 alert("Lista zawodników skopiowana do schowka!\n\n" + playerNames);
             }).catch(err => {
-                // Fallback dla przeglądarek blokujących schowek
                 prompt("Kopiuj listę ręcznie:", playerNames);
             });
         }
@@ -612,11 +613,21 @@
 
         function updateWalletUI() {
             document.getElementById('wallet-balance').innerText = souls;
-            if(souls === 0) {
+            if(souls === 0 && !isGameActive) {
                 document.getElementById('wallet-balance').style.color = "#ff4d4d";
+                document.getElementById('buy-in-btn').style.display = 'block';
             } else {
                 document.getElementById('wallet-balance').style.color = "#00ff88";
+                document.getElementById('buy-in-btn').style.display = 'none';
             }
+        }
+
+        // Nowa funkcja Buy In
+        function buyIn() {
+            window.open('https://paypal.me/kuburu', '_blank');
+            souls += 1000;
+            updateWalletUI();
+            setBet(10);
         }
 
         function switchCasinoTab(tabName) {
@@ -658,9 +669,11 @@
 
         function playSlots() {
             if(isGameActive || currentBet <= 0 || currentBet > souls) return;
-            souls -= currentBet; updateWalletUI(); setBet(currentBet);
             
-            isGameActive = true;
+            isGameActive = true; 
+            souls -= currentBet; 
+            updateWalletUI(); 
+            
             document.getElementById('slots-msg').innerText = "Kręcenie...";
             document.getElementById('slots-msg').style.color = "#fff";
 
@@ -690,9 +703,9 @@
                         document.getElementById('slots-msg').style.color = "#ff4d4d";
                     }
                     
-                    updateWalletUI();
+                    isGameActive = false; 
+                    updateWalletUI(); 
                     if(currentBet > souls) setBet(souls); 
-                    isGameActive = false;
                 }
             }, 100);
         }
@@ -736,9 +749,9 @@
         function playRoulette(choiceIndex) { 
             if(isGameActive || currentBet <= 0 || currentBet > souls) return;
             
-            souls -= currentBet;
-            updateWalletUI(); setBet(currentBet);
             isGameActive = true;
+            souls -= currentBet;
+            updateWalletUI(); 
             
             const track = document.getElementById('roulette-track');
             const msg = document.getElementById('roulette-msg');
@@ -775,9 +788,9 @@
                     msg.style.color = "#ff4d4d";
                 }
                 
+                isGameActive = false;
                 updateWalletUI();
                 if(currentBet > souls) setBet(souls);
-                isGameActive = false;
             }, 5200); 
         }
 
@@ -852,7 +865,9 @@
         function startBlackjack() {
             if(isGameActive || currentBet <= 0 || currentBet > souls) return;
             
-            souls -= currentBet; updateWalletUI(); isGameActive = true;
+            isGameActive = true;
+            souls -= currentBet; 
+            updateWalletUI(); 
             
             document.getElementById('btn-bj-deal').style.display = 'none';
             document.getElementById('btn-bj-hit').style.display = 'block';
@@ -923,10 +938,10 @@
                 msg.innerText = "Krupier wygrywa."; msg.style.color = "#ff4d4d";
             }
 
+            isGameActive = false; 
             updateWalletUI();
             if(currentBet > souls) setBet(souls);
             
-            isGameActive = false;
             document.getElementById('btn-bj-hit').style.display = 'none';
             document.getElementById('btn-bj-stand').style.display = 'none';
             document.getElementById('btn-bj-deal').style.display = 'block';
