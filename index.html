@@ -17,26 +17,35 @@
         body { display: flex; height: 100vh; width: 100vw; background-color: #0a0a0a; color: white; overflow: hidden; }
 
         /* --- SIDEBAR --- */
-        .sidebar { width: 250px; background-color: #121212; border-right: 2px solid #2a2a2a; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
-        .menu-btn { display: flex; align-items: center; padding: 15px 25px; cursor: pointer; transition: background 0.2s; font-size: 1.1rem; font-weight: bold; color: #d1d1d1; }
+        .sidebar { position: relative; width: 250px; background-color: #121212; border-right: 2px solid #2a2a2a; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; overflow: hidden; transition: background-color 0.5s; }
+        .menu-btn { position: relative; z-index: 10; display: flex; align-items: center; padding: 15px 25px; cursor: pointer; transition: background 0.2s; font-size: 1.1rem; font-weight: bold; color: #d1d1d1; }
         .menu-btn:hover { background-color: #2a2a2a; color: white; }
         .menu-btn .icon { margin-right: 15px; font-size: 1.5rem; width: 30px; text-align: center; }
 
+        /* --- BRAINROT VIDEOS --- */
+        .brainrot-vid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        body.brainrot-mode .brainrot-vid { opacity: 0.6; }
+        body.brainrot-mode .sidebar { background-color: rgba(18, 18, 18, 0.4); }
+        body.brainrot-mode #hidden-king, body.brainrot-mode #archmother, body.brainrot-mode .bottom-half { background-image: none !important; background-color: rgba(0,0,0,0.6); }
+
         /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
         .top-half { flex: 2; display: flex; border-bottom: 3px solid #000; }
-        .team-section { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .team-section { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        
+        /* Wszystkie dzieci sekcji w main-content muszą być nad wideo */
+        .team-section > :not(.brainrot-vid), .bottom-half > :not(.brainrot-vid) { position: relative; z-index: 10; }
 
         /* Tła */
-        #hidden-king { background: #2a1b1b url('bg_hidden_king.jpg') center/cover no-repeat; background-blend-mode: overlay; border-right: 3px solid #000; }
-        #archmother { background: #1b1b2a url('bg_archmother.jpg') center/cover no-repeat; background-blend-mode: overlay; }
-        .bottom-half { flex: 1; display: flex; flex-direction: column; position: relative; background: #1b2a1b url('bg_spectator.jpg') center/cover no-repeat; background-blend-mode: overlay; }
+        #hidden-king { background: #2a1b1b url('bg_hidden_king.jpg') center/cover no-repeat; background-blend-mode: overlay; border-right: 3px solid #000; transition: background-color 0.5s; }
+        #archmother { background: #1b1b2a url('bg_archmother.jpg') center/cover no-repeat; background-blend-mode: overlay; transition: background-color 0.5s; }
+        .bottom-half { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #1b2a1b url('bg_spectator.jpg') center/cover no-repeat; background-blend-mode: overlay; transition: background-color 0.5s; }
 
         /* --- TYTUŁY (Obrazki) --- */
         .title-img { max-height: 60px; margin: 20px auto; display: block; background-color: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 5px; font-size: 24px; font-weight: bold; text-align: center; color: white; alt: attr(alt); }
 
         /* --- DROPZONY I GRACZE --- */
-        .dropzone { flex: 1; padding: 20px; display: flex; align-content: flex-start; flex-wrap: wrap; gap: 10px; overflow-y: auto; }
+        .dropzone { flex: 1; padding: 20px; display: flex; align-content: flex-start; flex-wrap: wrap; gap: 10px; overflow-y: auto; position: relative; z-index: 10; }
 
         /* Specjalne formatowanie dla drużyn - Max 3 w rzędzie */
         #drop-hk .player-token, #drop-am .player-token { flex: 0 0 calc((100% - 20px) / 3); max-width: calc((100% - 20px) / 3); }
@@ -72,7 +81,6 @@
         .players-list-item { padding: 12px; background: #3a3a44; border-radius: 4px; font-weight: bold; font-size: 18px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
         .delete-btn { background: none; border: none; color: #ff4d4d; font-size: 22px; font-weight: bold; cursor: pointer; opacity: 0; transition: opacity 0.2s, color 0.2s; padding: 0 5px; display: flex; align-items: center; justify-content: center; }
         
-        /* Klasa dodana dla przycisku Reroll */
         .reroll-btn { background: none; border: none; color: #ffd700; font-size: 22px; font-weight: bold; cursor: pointer; opacity: 0; transition: opacity 0.2s, color 0.2s, transform 0.2s; padding: 0 5px; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
         .reroll-btn:hover { transform: rotate(180deg); }
 
@@ -149,10 +157,14 @@
 
     <!-- SIDEBAR -->
     <div class="sidebar">
+        <!-- Wideo: Subway Surfers w menu -->
+        <video class="brainrot-vid" src="subway_surfers.mp4" autoplay loop muted playsinline></video>
+        
         <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> dodaj zawodników</div>
         <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> wylosuj kapitanów</div>
         <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> coin flip</div>
         <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> kasyno</div>
+        <div class="menu-btn" onclick="toggleBrainrot()"><span class="icon">🧠</span> tryb zen</div>
         <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> reset</div>
     </div>
 
@@ -160,17 +172,23 @@
     <div class="main-content">
         <div class="top-half">
             <div class="team-section" id="hidden-king">
+                <!-- Wideo: GTA 5 zderzenia -->
+                <video class="brainrot-vid" src="gta5.mp4" autoplay loop muted playsinline></video>
                 <img src="title_hidden_king.png" class="title-img" alt="hidden king" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div class="title-img" style="display:none;">hidden king</div>
                 <div class="dropzone" id="drop-hk" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
             </div>
             <div class="team-section" id="archmother">
+                <!-- Wideo: GTA Rampa -->
+                <video class="brainrot-vid" src="gta_rampa.mp4" autoplay loop muted playsinline></video>
                 <img src="title_archmother.png" class="title-img" alt="archmother" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div class="title-img" style="display:none;">archmother</div>
                 <div class="dropzone" id="drop-am" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
             </div>
         </div>
         <div class="bottom-half" id="spectator">
+            <!-- Wideo: Minecraft Parkour -->
+            <video class="brainrot-vid" src="minecraft.mp4" autoplay loop muted playsinline></video>
             <div class="dropzone" id="drop-spec" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
         </div>
     </div>
@@ -186,10 +204,11 @@
                 <input type="text" id="player-input" class="input-box" placeholder="Dodaj gracza..." onkeypress="handleEnter(event)">
                 <button class="btn-box" onclick="addPlayer()">dodaj</button>
             </div>
-            <!-- NOWE PRZYCISKI IMPORT / EXPORT -->
-            <div style="display: flex; gap: 15px; margin-top: 15px;">
-                <button class="btn-box" style="flex: 1; font-size: 16px; padding: 10px; border-color: #ffd700; color: #ffd700;" onclick="exportPlayers()">Eksportuj (Kopiuj)</button>
-                <button class="btn-box" style="flex: 1; font-size: 16px; padding: 10px; border-color: #00ff88; color: #00ff88;" onclick="importPlayers()">Importuj (Wklej)</button>
+            <!-- NOWE PRZYCISKI IMPORT / EXPORT I WYCZYŚĆ WSZYSTKO -->
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #ffd700; color: #ffd700;" onclick="exportPlayers()">Eksportuj (Kopiuj)</button>
+                <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #00ff88; color: #00ff88;" onclick="importPlayers()">Importuj (Wklej)</button>
+                <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1); color: #ff4d4d;" onclick="clearAllData()">Wyczyść Wszystko</button>
             </div>
         </div>
     </div>
@@ -310,31 +329,97 @@
         let players = [];
         let playerCounter = 0;
         
-        // --- ZMIENNE KASYNA ---
-        let souls = 1000;
+        // --- ZMIENNE KASYNA (Teraz ładowane z LocalStorage) ---
+        let souls = parseInt(localStorage.getItem('draft_souls'));
+        if(isNaN(souls)) souls = 1000;
+        
         let currentBet = 10;
         let isGameActive = false;
         let currentUserNick = null;
 
-        // --- Obsługa ukrytego resetu (Alt + Coin Flip) ---
+        // --- ZAPISYWANIE STANU ---
+        function saveState() {
+            localStorage.setItem('draft_players', JSON.stringify(players));
+            localStorage.setItem('draft_counter', playerCounter.toString());
+            localStorage.setItem('draft_souls', souls.toString());
+        }
+
+        function loadState() {
+            let savedPlayers = localStorage.getItem('draft_players');
+            if (savedPlayers) {
+                players = JSON.parse(savedPlayers);
+                playerCounter = parseInt(localStorage.getItem('draft_counter')) || 0;
+                
+                // Odtworzenie kafelków na planszy
+                players.forEach(p => {
+                    const token = document.createElement('div');
+                    token.className = 'player-token';
+                    token.id = p.id;
+                    token.draggable = true;
+                    token.innerText = p.name;
+                    token.ondragstart = drag;
+                    
+                    if(p.isCaptain) token.classList.add('captain');
+                    
+                    const dropzone = document.getElementById(p.dropzoneId || 'drop-spec');
+                    if(dropzone) {
+                        dropzone.appendChild(token);
+                        updatePlayerColor(token, dropzone.id);
+                    }
+                });
+                
+                // Odtworzenie imion kapitanów w modalu
+                const cap1 = players.find(p => p.isCaptain);
+                const cap2 = players.filter(p => p.isCaptain).pop(); // Działa jeśli jest drugi
+                if (cap1) document.getElementById('cap1-slot').innerText = cap1.name;
+                if (cap2 && cap1.id !== cap2.id) document.getElementById('cap2-slot').innerText = cap2.name;
+            }
+        }
+
+        // --- BRAINROT / ZEN MODE ---
+        function toggleBrainrot() {
+            document.body.classList.toggle('brainrot-mode');
+        }
+
+        // --- CZYSZCZENIE WSZYSTKIEGO ---
+        function clearAllData() {
+            if(confirm("Czy na pewno chcesz usunąć wszystkie dane?\nZnikną gracze z planszy, historia dusz z kasyna i wszystkie ustawienia!")) {
+                localStorage.removeItem('draft_players');
+                localStorage.removeItem('draft_counter');
+                localStorage.removeItem('draft_souls');
+                localStorage.removeItem('draft_nickname');
+                
+                players = [];
+                playerCounter = 0;
+                souls = 1000;
+                currentUserNick = null;
+                
+                document.getElementById('drop-spec').innerHTML = '';
+                document.getElementById('drop-hk').innerHTML = '';
+                document.getElementById('drop-am').innerHTML = '';
+                document.getElementById('cap1-slot').innerText = '';
+                document.getElementById('cap2-slot').innerText = '';
+                
+                updateModalLists();
+                updateWalletUI();
+                alert("Wyczyszczono wszystkie dane z przeglądarki!");
+            }
+        }
+
+        // --- Obsługa ukrytego resetu samego nicku (Alt + Coin Flip) ---
         function handleCoinflipClick(event) {
             if (event.altKey) {
-                // Jeśli trzymamy Alt i klikamy - resetujemy nick z pamięci
                 localStorage.removeItem('draft_nickname');
                 currentUserNick = null;
-                alert('Pamięć przeglądarki wyczyszczona. Kasyno zostało zresetowane.');
+                alert('Pamięć przeglądarki wyczyszczona. Nick kasyna został zresetowany.');
             } else {
-                // Zwykłe kliknięcie - otwiera rzut monetą
                 openModal('modal-coinflip');
             }
         }
 
         // --- Obsługa Modali ---
         function openModal(id) {
-            
-            // LOGIKA DLA KASYNA
             if (id === 'modal-casino') {
-                // Pobieramy nick z LocalStorage, jeśli go tam nie ma, to pytamy
                 currentUserNick = localStorage.getItem('draft_nickname');
                 
                 if (!currentUserNick) {
@@ -342,23 +427,10 @@
                     if (inputNick) {
                         currentUserNick = inputNick.trim();
                         localStorage.setItem('draft_nickname', currentUserNick);
-                    } else {
-                        // Jak ktoś zrezygnuje z wpisania, nie wpuszczamy do kasyna
-                        return;
-                    }
+                    } else { return; }
                 }
 
-                // CZARNA LISTA (pisane małymi literami do sprawdzenia)
-                let lowerNick = currentUserNick.toLowerCase();
-                if (lowerNick === "ati" || lowerNick === "atquicktie") {
-                    alert("Limity kasyna przekroczone, rób te teamy a nie kręć");
-                    return; // Blokada wejścia
-                }
-
-                // Jeśli przeszedł pomyślnie weryfikacje, wchodzimy!
                 document.getElementById(id).classList.add('active');
-                
-                // Ustawiamy tytuł
                 document.getElementById('casino-title').innerText = `Witaj ${currentUserNick} w kasynie!`;
                 
                 updateWalletUI();
@@ -369,12 +441,10 @@
                 
                 if(rouletteArray.length === 0) setupRoulette();
             } else {
-                // Inne modale otwierają się normalnie
                 document.getElementById(id).classList.add('active');
                 if (id === 'modal-add') document.getElementById('player-input').focus();
                 if (id === 'modal-coinflip') resetCoinflip();
             }
-            
             updateModalLists();
         }
 
@@ -402,7 +472,7 @@
             if(!name) return;
 
             const playerId = 'player-' + playerCounter++;
-            players.push({ id: playerId, name: name, isCaptain: false });
+            players.push({ id: playerId, name: name, isCaptain: false, dropzoneId: 'drop-spec' });
             
             const token = document.createElement('div');
             token.className = 'player-token';
@@ -417,6 +487,7 @@
             input.value = '';
             input.focus();
             updateModalLists();
+            saveState(); // Zapisz po dodaniu
         }
 
         function removePlayer(playerId) {
@@ -433,6 +504,7 @@
             }
             
             updateModalLists();
+            saveState(); // Zapisz po usunięciu
         }
 
         function rerollPlayer(playerId) {
@@ -469,6 +541,7 @@
             }
             
             updateModalLists();
+            saveState(); // Zapisz po rerollu
         }
 
         // --- IMPORT / EXPORT ---
@@ -565,6 +638,7 @@
             document.getElementById(players[idx2].id).classList.add('captain');
             
             updateModalLists();
+            saveState(); // Zapisz po losowaniu kapitanów
         }
 
         // --- Rzut Monetą ---
@@ -635,11 +709,18 @@
             if (dropzone && draggedEl) {
                 dropzone.appendChild(draggedEl);
                 updatePlayerColor(draggedEl, dropzone.id);
+                
+                // Aktualizujemy dropzoneId w tablicy graczy
+                const playerData = players.find(p => p.id === data);
+                if(playerData) {
+                    playerData.dropzoneId = dropzone.id;
+                    saveState(); // Zapisujemy układ po każdym przeniesieniu
+                }
             }
         }
 
         function resetDraft() {
-            players.forEach(p => p.isCaptain = false);
+            players.forEach(p => { p.isCaptain = false; p.dropzoneId = 'drop-spec'; });
             const tokens = document.querySelectorAll('.player-token');
             const specDrop = document.getElementById('drop-spec');
             tokens.forEach(token => {
@@ -649,6 +730,7 @@
             document.getElementById('cap1-slot').innerText = '';
             document.getElementById('cap2-slot').innerText = '';
             updateModalLists();
+            saveState(); // Zapisz po resecie planszy
         }
 
         // ==========================================
@@ -664,9 +746,9 @@
                 document.getElementById('wallet-balance').style.color = "#00ff88";
                 document.getElementById('buy-in-btn').style.display = 'none';
             }
+            saveState(); // Zapisujemy stan dusz po każdej zmianie w portfelu
         }
 
-        // Nowa funkcja Buy In
         function buyIn() {
             window.open('https://paypal.me/kuburu', '_blank');
             souls += 1000;
@@ -991,8 +1073,11 @@
             document.getElementById('btn-bj-deal').style.display = 'block';
         }
 
-        // Init ruletki na start by paski były gotowe w tle
-        setupRoulette();
+        // Odpalenie wczytywania przy starcie
+        window.onload = () => {
+            loadState();
+        };
+
     </script>
 </body>
 </html>
