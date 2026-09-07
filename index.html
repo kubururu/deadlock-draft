@@ -204,11 +204,11 @@
                 <input type="text" id="player-input" class="input-box" placeholder="Dodaj gracza..." onkeypress="handleEnter(event)">
                 <button class="btn-box" onclick="addPlayer()">dodaj</button>
             </div>
-            <!-- NOWE PRZYCISKI IMPORT / EXPORT I WYCZYŚĆ WSZYSTKO -->
+            <!-- NOWE PRZYCISKI IMPORT / EXPORT I WYCZYŚĆ GRACZY -->
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #ffd700; color: #ffd700;" onclick="exportPlayers()">Eksportuj (Kopiuj)</button>
                 <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #00ff88; color: #00ff88;" onclick="importPlayers()">Importuj (Wklej)</button>
-                <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1); color: #ff4d4d;" onclick="clearAllData()">Wyczyść Wszystko</button>
+                <button class="btn-box" style="flex: 1; font-size: 14px; padding: 10px; border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1); color: #ff4d4d;" onclick="clearPlayers()">Wyczyść Graczy</button>
             </div>
         </div>
     </div>
@@ -381,18 +381,14 @@
             document.body.classList.toggle('brainrot-mode');
         }
 
-        // --- CZYSZCZENIE WSZYSTKIEGO ---
-        function clearAllData() {
-            if(confirm("Czy na pewno chcesz usunąć wszystkie dane?\nZnikną gracze z planszy, historia dusz z kasyna i wszystkie ustawienia!")) {
+        // --- CZYSZCZENIE SAMYCH ZAWODNIKÓW ---
+        function clearPlayers() {
+            if(confirm("Czy na pewno chcesz usunąć wszystkich zawodników z planszy i listy?\nKasyno (dusze i twój nick) pozostaną nietknięte.")) {
                 localStorage.removeItem('draft_players');
                 localStorage.removeItem('draft_counter');
-                localStorage.removeItem('draft_souls');
-                localStorage.removeItem('draft_nickname');
                 
                 players = [];
                 playerCounter = 0;
-                souls = 1000;
-                currentUserNick = null;
                 
                 document.getElementById('drop-spec').innerHTML = '';
                 document.getElementById('drop-hk').innerHTML = '';
@@ -401,8 +397,7 @@
                 document.getElementById('cap2-slot').innerText = '';
                 
                 updateModalLists();
-                updateWalletUI();
-                alert("Wyczyszczono wszystkie dane z przeglądarki!");
+                alert("Usunięto wszystkich zawodników!");
             }
         }
 
