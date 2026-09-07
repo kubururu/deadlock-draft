@@ -151,7 +151,7 @@
     <div class="sidebar">
         <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> dodaj zawodników</div>
         <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> wylosuj kapitanów</div>
-        <div class="menu-btn" onclick="openModal('modal-coinflip')"><span class="icon">🪙</span> coin flip</div>
+        <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> coin flip</div>
         <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> kasyno</div>
         <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> reset</div>
     </div>
@@ -229,7 +229,7 @@
             <div class="modal-close" onclick="closeModal('modal-casino')">&times;</div>
             
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #444; padding-bottom: 15px; margin-bottom: 20px;">
-                <h2 style="font-size: 28px; margin: 0; color: #ffd700; letter-spacing: 2px;">KASYNO</h2>
+                <h2 id="casino-title" style="font-size: 28px; margin: 0; color: #ffd700; letter-spacing: 2px;">KASYNO</h2>
                 <div style="display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: bold;">
                     <img src="icon_soul.png" style="width: 30px; height: 30px; object-fit: contain;" alt="D" onerror="this.style.display='none'">
                     <span id="wallet-balance" style="color: #00ff88;">1000</span>
@@ -314,15 +314,53 @@
         let souls = 1000;
         let currentBet = 10;
         let isGameActive = false;
+        let currentUserNick = null;
+
+        // --- Obsługa ukrytego resetu (Alt + Coin Flip) ---
+        function handleCoinflipClick(event) {
+            if (event.altKey) {
+                // Jeśli trzymamy Alt i klikamy - resetujemy nick z pamięci
+                localStorage.removeItem('draft_nickname');
+                currentUserNick = null;
+                alert('Pamięć przeglądarki wyczyszczona. Kasyno zostało zresetowane.');
+            } else {
+                // Zwykłe kliknięcie - otwiera rzut monetą
+                openModal('modal-coinflip');
+            }
+        }
 
         // --- Obsługa Modali ---
         function openModal(id) {
-            document.getElementById(id).classList.add('active');
             
-            if (id === 'modal-add') document.getElementById('player-input').focus();
-            if (id === 'modal-coinflip') resetCoinflip();
-            
+            // LOGIKA DLA KASYNA
             if (id === 'modal-casino') {
+                // Pobieramy nick z LocalStorage, jeśli go tam nie ma, to pytamy
+                currentUserNick = localStorage.getItem('draft_nickname');
+                
+                if (!currentUserNick) {
+                    let inputNick = prompt("Witaj w kasynie! Podaj swój nick, aby wejść:");
+                    if (inputNick) {
+                        currentUserNick = inputNick.trim();
+                        localStorage.setItem('draft_nickname', currentUserNick);
+                    } else {
+                        // Jak ktoś zrezygnuje z wpisania, nie wpuszczamy do kasyna
+                        return;
+                    }
+                }
+
+                // CZARNA LISTA (pisane małymi literami do sprawdzenia)
+                let lowerNick = currentUserNick.toLowerCase();
+                if (lowerNick === "ati" || lowerNick === "atquickie") {
+                    alert("Limity kasyna przekroczone, rób te teamy a nie kręć");
+                    return; // Blokada wejścia
+                }
+
+                // Jeśli przeszedł pomyślnie weryfikacje, wchodzimy!
+                document.getElementById(id).classList.add('active');
+                
+                // Ustawiamy tytuł
+                document.getElementById('casino-title').innerText = `Witaj ${currentUserNick} w kasynie!`;
+                
                 updateWalletUI();
                 setBet(currentBet); 
                 document.getElementById('reel-1').style.backgroundImage = `url('${slotImages[6]}')`;
@@ -330,7 +368,13 @@
                 document.getElementById('reel-3').style.backgroundImage = `url('${slotImages[6]}')`;
                 
                 if(rouletteArray.length === 0) setupRoulette();
+            } else {
+                // Inne modale otwierają się normalnie
+                document.getElementById(id).classList.add('active');
+                if (id === 'modal-add') document.getElementById('player-input').focus();
+                if (id === 'modal-coinflip') resetCoinflip();
             }
+            
             updateModalLists();
         }
 
