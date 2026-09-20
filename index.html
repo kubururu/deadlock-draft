@@ -724,7 +724,7 @@
                 const pickRateStr = (p.pickRateVal * 100).toFixed(1) + '%';
                 const banRateStr = (p.banRateVal * 100).toFixed(1) + '%';
                 const winRateStr = (p.winRateVal * 100).toFixed(1) + '%';
-                const iconPath = `ikony/${p.id}.png`;
+                const iconPath = `ikony/${p.id.toLowerCase()}.png`;
 
                 tbody.innerHTML += `
                     <tr>
