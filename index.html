@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deadlock Team Draft</title>
     <link rel="icon" href="icon.ico" type="image/x-icon">
+    
+    <!-- FIREBASE COMPAT LIBRARIES -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
     <style>
         /* Niestandardowy Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -71,8 +76,8 @@
 
         .modal-box { background: #1e1e24; color: #f0f0f0; width: 700px; height: 500px; border-radius: 12px; display: flex; flex-direction: column; padding: 40px 30px 30px 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); position: relative; border: 1px solid #333; }
         
-        /* ZWIĘKSZONY MODAL DLA KASYNA */
-        .casino-box { width: 850px; height: 750px; } 
+        /* ZWIĘKSZONY MODAL DLA KASYNA I STATYSTYK */
+        .casino-box { width: 900px; height: 750px; } 
 
         .modal-close { position: absolute; top: 5px; right: 15px; font-size: 28px; cursor: pointer; color: #888; font-weight: bold; transition: color 0.2s; z-index: 10; }
         .modal-close:hover { color: #fff; }
@@ -97,6 +102,17 @@
 
         .captains-footer { display: flex; align-items: center; justify-content: space-between; border-top: 2px solid #444; padding-top: 20px; margin-top: auto; }
         .captain-slot { font-size: 24px; font-weight: bold; flex: 1; text-align: center; color: #ffd700; }
+
+        /* --- STATYSTYKI STYLES --- */
+        .stats-tab { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+        .stats-tab.active { display: flex; }
+        .stats-container { flex: 1; background: #1e1e24; border: 1px solid #444; border-radius: 6px; overflow-y: auto; }
+        .stats-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .stats-table th { background: #3a3a44; padding: 15px; color: #ffd700; position: sticky; top: 0; z-index: 5; font-size: 16px; border-bottom: 2px solid #555; cursor: pointer; user-select: none; transition: background 0.2s; }
+        .stats-table th:hover { background: #4a4a56; }
+        .stats-table td { padding: 12px 15px; border-bottom: 1px solid #333; color: #ddd; font-size: 16px; vertical-align: middle; }
+        .stats-table tbody tr:hover { background: #2a2a32; }
+        .hero-icon { width: 35px; height: 35px; border-radius: 6px; object-fit: cover; vertical-align: middle; margin-right: 12px; border: 1px solid #555; }
 
         /* --- KASYNO STYLES --- */
         .casino-tab { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
@@ -164,6 +180,7 @@
         <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> wylosuj kapitanów</div>
         <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> coin flip</div>
         <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> kasyno</div>
+        <div class="menu-btn" onclick="openModal('modal-stats')"><span class="icon">📊</span> statystyki</div>
         <div class="menu-btn" onclick="toggleBrainrot()"><span class="icon">🧠</span> tryb zen</div>
         <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> reset</div>
     </div>
@@ -194,6 +211,67 @@
     </div>
 
     <!-- OVERLAYS / MODALS -->
+
+    <!-- MODAL: STATYSTYKI -->
+    <div class="modal-overlay" id="modal-stats" onclick="closeOnOutside(event)">
+        <div class="modal-box casino-box">
+            <div class="modal-close" onclick="closeModal('modal-stats')">&times;</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #444; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="font-size: 28px; margin: 0; color: #00ff88; letter-spacing: 2px;">STATYSTYKI MIXÓW</h2>
+                <div style="font-size: 18px; font-weight: bold; color: #aaa;">
+                    Suma Gier: <span id="stats-total-matches" style="color: #fff;">?</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn-box tab-btn-stats active" id="btn-stats-gracze" onclick="switchStatsTab('gracze')" style="padding: 10px 20px;">Gracze</button>
+                <button class="btn-box tab-btn-stats" id="btn-stats-postacie" onclick="switchStatsTab('postacie')" style="padding: 10px 20px;">Postacie</button>
+                <button class="btn-box" onclick="fetchStats()" style="padding: 10px 20px; margin-left: auto; background-color: #ffd700; color: #000;">Odśwież 🔄</button>
+            </div>
+
+            <!-- TAB: GRACZE -->
+            <div id="stats-tab-gracze" class="stats-tab active">
+                <div class="stats-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th id="th-g-id" onclick="sortGracze('id')" title="Sortuj">Gracz</th>
+                                <th id="th-g-played" onclick="sortGracze('played')" title="Sortuj">Zagrane</th>
+                                <th id="th-g-won" onclick="sortGracze('won')" title="Sortuj">Wygrane</th>
+                                <th id="th-g-winRatioVal" onclick="sortGracze('winRatioVal')" title="Sortuj">Win Ratio</th>
+                                <th id="th-g-mvp" onclick="sortGracze('mvp')" title="Sortuj">MVP</th>
+                                <th id="th-g-keyPlayer" onclick="sortGracze('keyPlayer')" title="Sortuj">Key Player</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-gracze-body">
+                            <tr><td colspan="6" style="text-align:center;">Pobieranie statystyk...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: POSTACIE -->
+            <div id="stats-tab-postacie" class="stats-tab">
+                <div class="stats-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th id="th-p-id" onclick="sortPostacie('id')" title="Sortuj">Postać</th>
+                                <th id="th-p-presence" onclick="sortPostacie('presence')" title="Sortuj">Obecność (P+B)</th>
+                                <th id="th-p-pickRateVal" onclick="sortPostacie('pickRateVal')" title="Sortuj">Pick Rate</th>
+                                <th id="th-p-banRateVal" onclick="sortPostacie('banRateVal')" title="Sortuj">Ban Rate</th>
+                                <th id="th-p-wins" onclick="sortPostacie('wins')" title="Sortuj">Wygrane</th>
+                                <th id="th-p-winRateVal" onclick="sortPostacie('winRateVal')" title="Sortuj">Win Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-postacie-body">
+                            <tr><td colspan="6" style="text-align:center;">Pobieranie statystyk...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Modal: Dodaj zawodników -->
     <div class="modal-overlay" id="modal-add" onclick="closeOnOutside(event)">
@@ -325,6 +403,22 @@
     </div>
 
     <script>
+        // ==========================================
+        // ============ FIREBASE CONFIG =============
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA18C9ytHmvK6n6gBASD6BYekZCbjlsjwY",
+            authDomain: "deadlock-mixy-staty.firebaseapp.com",
+            projectId: "deadlock-mixy-staty",
+            storageBucket: "deadlock-mixy-staty.firebasestorage.app",
+            messagingSenderId: "703690432848",
+            appId: "1:703690432848:web:23f889e3c143a415434c55",
+            measurementId: "G-KW11RCZ3FJ"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         // --- OGÓLNE ZMIENNE ---
         let players = [];
         let playerCounter = 0;
@@ -414,7 +508,10 @@
 
         // --- Obsługa Modali ---
         function openModal(id) {
-            if (id === 'modal-casino') {
+            if (id === 'modal-stats') {
+                document.getElementById(id).classList.add('active');
+                fetchStats(); // Pobierz staty przy otwarciu
+            } else if (id === 'modal-casino') {
                 currentUserNick = localStorage.getItem('draft_nickname');
                 
                 if (!currentUserNick) {
@@ -423,6 +520,12 @@
                         currentUserNick = inputNick.trim();
                         localStorage.setItem('draft_nickname', currentUserNick);
                     } else { return; }
+                }
+
+                let lowerNick = currentUserNick.toLowerCase();
+                if (lowerNick === "ati" || lowerNick === "atquickie") {
+                    alert("Limity kasyna przekroczone, rób te teamy a nie kręć");
+                    return; 
                 }
 
                 document.getElementById(id).classList.add('active');
@@ -455,6 +558,207 @@
             if (event.target.classList.contains('modal-overlay')) {
                 if(event.target.id === 'modal-casino' && isGameActive) return; 
                 event.target.classList.remove('active');
+            }
+        }
+
+        // ==========================================
+        // ============ STATYSTYKI LOGIC ============
+        // ==========================================
+        
+        let statsGraczeData = [];
+        let statsPostacieData = [];
+        let totalMatchesGlobal = 0;
+        
+        let currentSortG = { col: 'played', asc: false };
+        let currentSortP = { col: 'presence', asc: false };
+
+        function switchStatsTab(tab) {
+            document.querySelectorAll('.stats-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn-stats').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('stats-tab-' + tab).classList.add('active');
+            document.getElementById('btn-stats-' + tab).classList.add('active');
+        }
+
+        async function fetchStats() {
+            const tbodyGracze = document.getElementById('stats-gracze-body');
+            const tbodyPostacie = document.getElementById('stats-postacie-body');
+            const totalMatchesLabel = document.getElementById('stats-total-matches');
+            
+            tbodyGracze.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pobieranie statystyk...</td></tr>';
+            tbodyPostacie.innerHTML = '<tr><td colspan="6" style="text-align:center;">Pobieranie statystyk...</td></tr>';
+            
+            try {
+                // POBIERZ TOTAL MATCHES
+                const globalDoc = await db.collection('globalne').doc('stats').get();
+                totalMatchesGlobal = globalDoc.exists ? (globalDoc.data().total_matches || 0) : 0;
+                totalMatchesLabel.innerText = totalMatchesGlobal;
+
+                // POBIERZ GRACZY
+                const graczeSnap = await db.collection('gracze').get();
+                let rawGracze = [];
+                graczeSnap.forEach(doc => rawGracze.push({ id: doc.id, ...doc.data() }));
+
+                statsGraczeData = rawGracze.map(g => {
+                    const played = g.matches_played || 0;
+                    const won = g.matches_won || 0;
+                    return {
+                        id: g.id,
+                        played: played,
+                        won: won,
+                        winRatioVal: played > 0 ? won / played : 0,
+                        mvp: g.mvp || 0,
+                        keyPlayer: g.key_player || 0
+                    };
+                });
+
+                // POBIERZ POSTACIE
+                const postacieSnap = await db.collection('postacie').get();
+                let rawPostacie = [];
+                postacieSnap.forEach(doc => rawPostacie.push({ id: doc.id, ...doc.data() }));
+
+                statsPostacieData = rawPostacie.map(p => {
+                    const picked = p.picked || 0;
+                    const banned = p.banned || 0;
+                    const wins = p.wins || 0;
+                    const presence = picked + banned;
+                    return {
+                        id: p.id,
+                        picked: picked,
+                        banned: banned,
+                        wins: wins,
+                        presence: presence,
+                        pickRateVal: totalMatchesGlobal > 0 ? picked / totalMatchesGlobal : 0,
+                        banRateVal: totalMatchesGlobal > 0 ? banned / totalMatchesGlobal : 0,
+                        winRateVal: picked > 0 ? wins / picked : 0
+                    };
+                });
+
+                // Zastosowanie obecnego sortowania lub default
+                let tmpGCol = currentSortG.col; currentSortG.col = null; sortGracze(tmpGCol);
+                let tmpPCol = currentSortP.col; currentSortP.col = null; sortPostacie(tmpPCol);
+
+            } catch (e) {
+                console.error("Błąd podczas pobierania danych z Firebase:", e);
+                tbodyGracze.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ff4d4d;">Błąd połączenia z bazą.<br>Sprawdź konsolę (F12)</td></tr>`;
+                tbodyPostacie.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ff4d4d;">Błąd połączenia z bazą.<br>Sprawdź konsolę (F12)</td></tr>`;
+            }
+        }
+
+        // --- SORTOWANIE I RENDEROWANIE TABELI ---
+
+        function sortGracze(col) {
+            if(currentSortG.col === col) {
+                currentSortG.asc = !currentSortG.asc;
+            } else {
+                currentSortG.col = col;
+                currentSortG.asc = (col === 'id') ? true : false;
+            }
+
+            statsGraczeData.sort((a,b) => {
+                let vA = a[col]; let vB = b[col];
+                if(typeof vA === 'string') vA = vA.toLowerCase();
+                if(typeof vB === 'string') vB = vB.toLowerCase();
+                if(vA < vB) return currentSortG.asc ? -1 : 1;
+                if(vA > vB) return currentSortG.asc ? 1 : -1;
+                return 0;
+            });
+            renderGraczeTable();
+        }
+
+        function sortPostacie(col) {
+            if(currentSortP.col === col) {
+                currentSortP.asc = !currentSortP.asc;
+            } else {
+                currentSortP.col = col;
+                currentSortP.asc = (col === 'id') ? true : false;
+            }
+
+            statsPostacieData.sort((a,b) => {
+                let vA = a[col]; let vB = b[col];
+                if(typeof vA === 'string') vA = vA.toLowerCase();
+                if(typeof vB === 'string') vB = vB.toLowerCase();
+                if(vA < vB) return currentSortP.asc ? -1 : 1;
+                if(vA > vB) return currentSortP.asc ? 1 : -1;
+                return 0;
+            });
+            renderPostacieTable();
+        }
+
+        function renderGraczeTable() {
+            const tbody = document.getElementById('stats-gracze-body');
+            tbody.innerHTML = '';
+            
+            if (statsGraczeData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Brak danych w bazie</td></tr>';
+                return;
+            }
+            
+            statsGraczeData.forEach(g => {
+                const winRatioStr = (g.winRatioVal * 100).toFixed(1) + '%';
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold; color:#fff; font-size:18px;">${g.id}</td>
+                        <td>${g.played}</td>
+                        <td style="color:#00ff88;">${g.won}</td>
+                        <td style="color:#ffd700; font-weight:bold;">${winRatioStr}</td>
+                        <td style="color:#ffb347;">${g.mvp}</td>
+                        <td style="color:#4da6ff;">${g.keyPlayer}</td>
+                    </tr>
+                `;
+            });
+            updateSortIcons('g');
+        }
+
+        function renderPostacieTable() {
+            const tbody = document.getElementById('stats-postacie-body');
+            tbody.innerHTML = '';
+
+            if (statsPostacieData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Brak danych w bazie</td></tr>';
+                return;
+            }
+
+            statsPostacieData.forEach(p => {
+                const presenceRate = totalMatchesGlobal > 0 ? ((p.presence / totalMatchesGlobal) * 100).toFixed(1) + '%' : '0.0%';
+                const pickRateStr = (p.pickRateVal * 100).toFixed(1) + '%';
+                const banRateStr = (p.banRateVal * 100).toFixed(1) + '%';
+                const winRateStr = (p.winRateVal * 100).toFixed(1) + '%';
+                const iconPath = `ikony/${p.id}.png`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold; color:#fff;">
+                            <img src="${iconPath}" class="hero-icon" alt="${p.id}" onerror="this.style.display='none'">
+                            ${p.id}
+                        </td>
+                        <td style="color:#ffd700; font-weight:bold;">${presenceRate} (${p.presence})</td>
+                        <td>${pickRateStr} (${p.picked})</td>
+                        <td style="color:#ff4d4d;">${banRateStr} (${p.banned})</td>
+                        <td style="color:#00ff88;">${p.wins}</td>
+                        <td style="color:#4da6ff;">${winRateStr}</td>
+                    </tr>
+                `;
+            });
+            updateSortIcons('p');
+        }
+
+        function updateSortIcons(type) {
+            const ascIcon = ' 🔼';
+            const descIcon = ' 🔽';
+            
+            if(type === 'g') {
+                const cols = { 'id': 'Gracz', 'played': 'Zagrane', 'won': 'Wygrane', 'winRatioVal': 'Win Ratio', 'mvp': 'MVP', 'keyPlayer': 'Key Player' };
+                for(let key in cols) {
+                    let th = document.getElementById('th-g-' + key);
+                    if(th) th.innerText = cols[key] + (currentSortG.col === key ? (currentSortG.asc ? ascIcon : descIcon) : '');
+                }
+            } else {
+                const cols = { 'id': 'Postać', 'presence': 'Obecność (P+B)', 'pickRateVal': 'Pick Rate', 'banRateVal': 'Ban Rate', 'wins': 'Wygrane', 'winRateVal': 'Win Rate' };
+                for(let key in cols) {
+                    let th = document.getElementById('th-p-' + key);
+                    if(th) th.innerText = cols[key] + (currentSortP.col === key ? (currentSortP.asc ? ascIcon : descIcon) : '');
+                }
             }
         }
 
