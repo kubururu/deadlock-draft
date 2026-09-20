@@ -344,6 +344,7 @@
             <div style="background: #2a2a32; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 18px; font-weight: bold;">Stawka: <span id="current-bet-display" style="color:#ffd700; margin-left: 5px; font-size: 22px;">10</span></span>
                 <div style="flex:1;"></div>
+                <button class="btn-box bet-btn" onclick="setCustomBet()" style="border-color: #4da6ff; color: #4da6ff;">Własna</button>
                 <button class="btn-box bet-btn" onclick="setBet(10)">10</button>
                 <button class="btn-box bet-btn" onclick="setBet(50)">50</button>
                 <button class="btn-box bet-btn" onclick="setBet(100)">100</button>
@@ -1075,6 +1076,18 @@
             if(currentBet < 0) currentBet = 0;
 
             document.getElementById('current-bet-display').innerText = currentBet;
+        }
+
+        function setCustomBet() {
+            if(isGameActive) return;
+            let val = prompt("Podaj własną stawkę (ilość dusz):");
+            if(val === null || val.trim() === "") return;
+            let amount = parseInt(val);
+            if(isNaN(amount) || amount <= 0) {
+                alert("Podaj prawidłową liczbę większą od zera!");
+                return;
+            }
+            setBet(amount);
         }
 
         const slotImages = ['slot_soul.png', 'slot_trooper.png', 'slot_urn.png', 'slot_box.png', 'slot_midboss.png', 'slot_rejuv.png', 'slot_seven.png'];
