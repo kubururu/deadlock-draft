@@ -6,6 +6,11 @@
     <title>Deadlock Team Draft</title>
     <link rel="icon" href="icon.ico" type="image/x-icon">
     
+    
+    <!-- MOBILE DRAG & DROP POLYFILL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+
     <!-- FIREBASE COMPAT LIBRARIES -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -167,6 +172,45 @@
         #coin-result-text, .casino-msg { height: 40px; margin-top: 20px; font-size: 28px; font-weight: bold; color: #ffd700; text-transform: uppercase; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .coin-footer { display: flex; justify-content: center; margin-top: 10px; border-top: 2px solid #444; padding-top: 20px; width: 100%; }
 
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 900px) {
+            body { flex-direction: column; overflow-y: auto; overflow-x: hidden; height: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #2a2a2a; padding: 0; flex-direction: row; flex-wrap: wrap; justify-content: space-around; }
+            .menu-text { display: none; }
+            .menu-btn { padding: 15px 5px; margin: 0 !important; font-size: 1.5rem; flex: 1 1 auto; text-align: center; justify-content: center; min-width: 0px; }
+            .menu-btn .icon { margin-right: 0; width: 100%; text-align: center; }
+            
+            .main-content { flex: none; height: auto; min-height: 100vh; }
+            .top-half { flex-direction: column; border-bottom: none; }
+            .team-section { border-bottom: 3px solid #000; min-height: 300px; }
+            #hidden-king { border-right: none; }
+            .bottom-half { min-height: 300px; }
+            
+            /* Poprawa układu tokenów na telefonach */
+            #drop-hk .player-token, #drop-am .player-token, #drop-spec .player-token { 
+                flex: 0 0 calc(50% - 10px); 
+                max-width: calc(50% - 10px); 
+                font-size: 16px; 
+                padding: 12px 5px; 
+            }
+            
+            /* Modale na telefonach */
+            .modal-box, .casino-box { width: 95% !important; height: 90vh !important; padding: 20px 15px 15px 15px; }
+            .modal-close { top: 10px; right: 10px; }
+            .slot-machine { gap: 5px; }
+            .slot-reel { width: 90px; height: 90px; border-width: 2px; }
+            .roulette-item { min-width: 60px; font-size: 18px; }
+            
+            .bj-controls, .roulette-board, .modal-footer { flex-direction: column; gap: 10px; }
+            .btn-box { padding: 12px 20px; font-size: 16px; width: 100%; }
+            .bet-btn { padding: 8px 10px; font-size: 14px; width: auto; flex: 1; }
+            .captains-footer { flex-direction: column; gap: 10px; }
+            .captain-slot { font-size: 18px; }
+            
+            h2 { font-size: 22px !important; }
+            .stats-table th, .stats-table td { font-size: 12px; padding: 8px 5px; }
+            .hero-icon { width: 25px; height: 25px; margin-right: 5px; }
+        }
     </style>
 </head>
 <body>
@@ -176,14 +220,14 @@
         <!-- Wideo: Subway Surfers w menu -->
         <video class="brainrot-vid" src="subway_surfers.mp4" autoplay loop muted playsinline></video>
         
-        <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> dodaj zawodników</div>
-        <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> wylosuj kapitanów</div>
-        <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> coin flip</div>
-        <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> kasyno</div>
-        <div class="menu-btn" onclick="openModal('modal-stats')"><span class="icon">📊</span> statystyki</div>
-        <div class="menu-btn" onclick="toggleBrainrot()"><span class="icon">🧠</span> tryb zen</div>
-        <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> reset</div>
-        <div class="menu-btn" onclick="openAdminPanel()"><span class="icon">🔒</span> panel admina</div>
+        <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> <span class="menu-text">dodaj zawodników</span></div>
+        <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> <span class="menu-text">wylosuj kapitanów</span></div>
+        <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> <span class="menu-text">coin flip</span></div>
+        <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> <span class="menu-text">kasyno</span></div>
+        <div class="menu-btn" onclick="openModal('modal-stats')"><span class="icon">📊</span> <span class="menu-text">statystyki</span></div>
+        <div class="menu-btn" onclick="toggleBrainrot()"><span class="icon">🧠</span> <span class="menu-text">tryb zen</span></div>
+        <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> <span class="menu-text">reset</span></div>
+        <div class="menu-btn" onclick="openAdminPanel()"><span class="icon">🔒</span> <span class="menu-text">panel admina</span></div>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -468,6 +512,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        
+        // --- MOBILE DRAG & DROP INIT ---
+        // Wymusza obsługę dotyku dla natywnego drag&drop w HTML5
+        MobileDragDrop.polyfill({
+            holdToDrag: 200 // Przytrzymaj 200ms by podnieść kafelek (zapobiega blokowaniu scrollowania strony)
+        });
+        window.addEventListener('touchmove', function() {}, {passive: false});
+
         // --- OGÓLNE ZMIENNE ---
         let players = [];
         let playerCounter = 0;
@@ -613,11 +665,21 @@
         // --- PANEL ADMINA ---
         async function openAdminPanel() {
             let pass = prompt("Podaj hasło do panelu:");
-            if(pass !== "2408") {
-                if(pass !== null) alert("Błędne hasło!");
+            if(pass === null) return;
+            
+            try {
+                const configDoc = await db.collection('globalne').doc('config').get();
+                if(configDoc.exists && configDoc.data().admin_password === pass) {
+                    document.getElementById('modal-admin').classList.add('active');
+                } else {
+                    alert("Błędne hasło!");
+                    return;
+                }
+            } catch (e) {
+                alert("Błąd połączenia podczas weryfikacji hasła.");
+                console.error(e);
                 return;
             }
-            document.getElementById('modal-admin').classList.add('active');
             
             if(document.getElementById('admin-win-players').options.length === 0) {
                 await loadAdminData();
