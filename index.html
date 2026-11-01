@@ -175,9 +175,9 @@
         /* --- RESPONSIVE DESIGN --- */
         @media (max-width: 900px) {
             body { flex-direction: column; overflow-y: auto; overflow-x: hidden; height: auto; }
-            .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #2a2a2a; padding: 0; flex-direction: row; flex-wrap: wrap; justify-content: space-around; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #2a2a2a; padding: 0; flex-direction: row; flex-wrap: nowrap; justify-content: space-between; }
             .menu-text { display: none; }
-            .menu-btn { padding: 15px 5px; margin: 0 !important; font-size: 1.5rem; flex: 1 1 auto; text-align: center; justify-content: center; min-width: 0px; }
+            .menu-btn { padding: 15px 0; margin: 0 !important; font-size: 1.5rem; flex: 1 1 0; text-align: center; justify-content: center; min-width: 0; }
             .menu-btn .icon { margin-right: 0; width: 100%; text-align: center; }
             
             .main-content { flex: none; height: auto; min-height: 100vh; }
@@ -191,26 +191,58 @@
                 flex: 0 0 calc(50% - 10px); 
                 max-width: calc(50% - 10px); 
                 font-size: 16px; 
-                padding: 12px 5px; 
+                padding: 8px 5px; 
+                max-height: 45px; 
             }
             
-            /* Modale na telefonach */
-            .modal-box, .casino-box { width: 95% !important; height: 90vh !important; padding: 20px 15px 15px 15px; }
+            /* Modale na telefonach - ogólne */
+            .modal-box, .casino-box { width: 95% !important; height: 90vh !important; padding: 20px 10px 10px 10px !important; overflow-y: auto; overflow-x: hidden;}
             .modal-close { top: 10px; right: 10px; }
+            
+            /* Kasyno - wyśrodkowanie wyboru gier i dusz */
+            .casino-box > div:first-child { flex-direction: column !important; align-items: center !important; gap: 10px; text-align: center; }
+            #wallet-balance { font-size: 20px; }
+            #buy-in-btn { position: relative; margin: 10px 0 0 0; z-index: 100; }
+            .casino-box > div:nth-child(2) { justify-content: center; flex-wrap: wrap; }
+            .tab-btn { flex: 1; min-width: 30%; padding: 8px !important; font-size: 14px !important; }
+            
+            /* Stawki w Kasynie */
+            .casino-box > div:nth-child(3) { flex-wrap: wrap; justify-content: center; }
+            .bet-btn { padding: 8px; font-size: 12px; flex: 1 1 20%; min-width: 60px; margin: 2px; }
+            
+            /* Sloty na telefonie */
             .slot-machine { gap: 5px; }
             .slot-reel { width: 90px; height: 90px; border-width: 2px; }
+            
+            /* Ruletka na telefonie */
             .roulette-item { min-width: 60px; font-size: 18px; }
+            #roulette-msg { font-size: 16px !important; text-align: center; min-height: 40px; margin-bottom: 10px !important; word-wrap: break-word; }
+            .roulette-board { flex-direction: row; flex-wrap: wrap; gap: 5px; }
+            .r-btn { font-size: 14px; padding: 10px 5px; flex: 1 1 45%; }
             
-            .bj-controls, .roulette-board, .modal-footer { flex-direction: column; gap: 10px; }
-            .btn-box { padding: 12px 20px; font-size: 16px; width: 100%; }
-            .bet-btn { padding: 8px 10px; font-size: 14px; width: auto; flex: 1; }
-            .captains-footer { flex-direction: column; gap: 10px; }
-            .captain-slot { font-size: 18px; }
+            /* Blackjack na telefonie */
+            .bj-table { min-height: 250px; padding: 10px; }
+            .bj-controls { flex-direction: row; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+            #btn-bj-deal, #btn-bj-hit, #btn-bj-stand { padding: 10px; font-size: 14px; flex: 1; min-width: 40%; }
             
-            h2 { font-size: 22px !important; }
+            /* Statystyki - wymuszony scroll */
+            #stats-tab-gracze, #stats-tab-postacie { width: 100%; overflow-x: auto; }
+            .stats-table { min-width: 400px; }
+            .btn-box.tab-btn-stats { padding: 8px 10px !important; font-size: 14px; }
             .stats-table th, .stats-table td { font-size: 12px; padding: 8px 5px; }
             .hero-icon { width: 25px; height: 25px; margin-right: 5px; }
+            
+            /* Panele ogólne */
+            .modal-footer, .captains-footer { flex-direction: column; gap: 10px; }
+            .btn-box { padding: 12px 20px; font-size: 16px; width: 100%; }
+            .captain-slot { font-size: 18px; }
+            h2 { font-size: 22px !important; }
+            
+            /* Panel Admina */
+            #modal-admin .modal-box { padding: 15px 5px; }
+            #modal-admin select { font-size: 14px !important; }
         }
+body.modal-open { overflow: hidden; }
     </style>
 </head>
 <body>
@@ -242,7 +274,7 @@
             </div>
             <div class="team-section" id="archmother">
                 <!-- Wideo: GTA Rampa -->
-                <video class="brainrot-vid" src="gta_rampa.mp4" autoplay loop muted playsinline></video>
+                <video class="brainrot-vid" src="satisfying.mp4" autoplay loop muted playsinline></video>
                 <img src="title_archmother.png" class="title-img" alt="archmother" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div class="title-img" style="display:none;">archmother</div>
                 <div class="dropzone" id="drop-am" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
@@ -610,7 +642,7 @@
         // --- Obsługa Modali ---
         function openModal(id) {
             if (id === 'modal-stats') {
-                document.getElementById(id).classList.add('active');
+                document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open');
                 fetchStats(); // Pobierz staty przy otwarciu
             } else if (id === 'modal-casino') {
                 currentUserNick = localStorage.getItem('draft_nickname');
@@ -629,7 +661,7 @@
                     return; 
                 }
 
-                document.getElementById(id).classList.add('active');
+                document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open');
                 document.getElementById('casino-title').innerText = `Witaj ${currentUserNick} w kasynie!`;
                 
                 updateWalletUI();
@@ -640,7 +672,7 @@
                 
                 if(rouletteArray.length === 0) setupRoulette();
             } else {
-                document.getElementById(id).classList.add('active');
+                document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open');
                 if (id === 'modal-add') document.getElementById('player-input').focus();
                 if (id === 'modal-coinflip') resetCoinflip();
             }
@@ -652,34 +684,24 @@
                 alert("Dokończ grę przed zamknięciem kasyna!");
                 return;
             }
-            document.getElementById(id).classList.remove('active');
+            document.getElementById(id).classList.remove('active'); document.body.classList.remove('modal-open');
         }
 
         function closeOnOutside(event) {
             if (event.target.classList.contains('modal-overlay')) {
                 if(event.target.id === 'modal-casino' && isGameActive) return; 
-                event.target.classList.remove('active');
+                event.target.classList.remove('active'); document.body.classList.remove('modal-open');
             }
         }
 
         // --- PANEL ADMINA ---
         async function openAdminPanel() {
             let pass = prompt("Podaj hasło do panelu:");
-            if(pass === null) return;
-            
-            try {
-                const configDoc = await db.collection('globalne').doc('config').get();
-                if(configDoc.exists && configDoc.data().admin_password === pass) {
-                    document.getElementById('modal-admin').classList.add('active');
-                } else {
-                    alert("Błędne hasło!");
-                    return;
-                }
-            } catch (e) {
-                alert("Błąd połączenia podczas weryfikacji hasła.");
-                console.error(e);
+            if(pass !== "2408") {
+                if(pass !== null) alert("Błędne hasło!");
                 return;
             }
+            document.getElementById('modal-admin').classList.add('active');
             
             if(document.getElementById('admin-win-players').options.length === 0) {
                 await loadAdminData();
@@ -1278,16 +1300,21 @@
             ev.preventDefault();
             const data = ev.dataTransfer.getData("text");
             const draggedEl = document.getElementById(data);
-            const dropzone = ev.target.closest('.dropzone');
+            
+            let dropzone = ev.target.closest('.dropzone');
+            if(!dropzone) {
+                const section = ev.target.closest('.team-section, .bottom-half');
+                if(section) dropzone = section.querySelector('.dropzone');
+            }
+
             if (dropzone && draggedEl) {
                 dropzone.appendChild(draggedEl);
                 updatePlayerColor(draggedEl, dropzone.id);
                 
-                // Aktualizujemy dropzoneId w tablicy graczy
                 const playerData = players.find(p => p.id === data);
                 if(playerData) {
                     playerData.dropzoneId = dropzone.id;
-                    saveState(); // Zapisujemy układ po każdym przeniesieniu
+                    saveState(); 
                 }
             }
         }
@@ -1441,14 +1468,13 @@
                 
                 if(val === 0) {
                     div.classList.add('r-hk');
-                    div.style.backgroundImage = `url('roulette_king.png')`;
+                    div.innerHTML = `<img src="roulette_king.png" style="max-width:90%; max-height:90%; object-fit:contain;" alt="HK">`;
                 } else if(val === 1) {
                     div.classList.add('r-am');
-                    div.style.backgroundImage = `url('roulette_arch.png')`;
+                    div.innerHTML = `<img src="roulette_arch.png" style="max-width:90%; max-height:90%; object-fit:contain;" alt="AM">`;
                 } else {
                     div.classList.add('r-shop');
-                    div.style.backgroundImage = `url('roulette_shop.png')`;
-                    div.style.backgroundSize = 'cover';
+                    div.innerHTML = `<img src="roulette_shop.png" style="max-width:90%; max-height:90%; object-fit:contain;" alt="Shop">`;
                 }
                 track.appendChild(div);
             });
