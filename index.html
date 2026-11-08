@@ -1210,7 +1210,7 @@ body.modal-open { overflow: hidden; }
             }, 150);
 
             const isHeads = Math.random() < 0.5;
-            const isEdge = true; // 100% szans na kant
+            const isEdge = Math.random() < 0.01;
             
             const resultImg = isHeads ? 'orzel.png' : 'reszka.png';
             const resultStr = isHeads ? 'ORZEŁ' : 'RESZKA';
