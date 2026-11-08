@@ -6,6 +6,7 @@
     <title>Deadlock Team Draft</title>
     <link rel="icon" href="icon.ico" type="image/x-icon">
     
+    
     <!-- FIREBASE COMPAT LIBRARIES -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -167,6 +168,7 @@
         #coin-result-text, .casino-msg { height: 40px; margin-top: 20px; font-size: 28px; font-weight: bold; color: #ffd700; text-transform: uppercase; letter-spacing: 2px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .coin-footer { display: flex; justify-content: center; margin-top: 10px; border-top: 2px solid #444; padding-top: 20px; width: 100%; }
 
+        
         /* --- MOBILE BLOCKER --- */
         #mobile-blocker { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #1b2a1b url('bg_spectator.jpg') center/cover no-repeat; background-blend-mode: overlay; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         #mobile-blocker h1 { color: #ff4d4d; font-size: 32px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 5px #000; }
@@ -176,6 +178,8 @@
             body > * { display: none !important; }
             body > #mobile-blocker { display: flex !important; }
         }
+
+body.modal-open { overflow: hidden; }
     </style>
 </head>
 <body>
@@ -184,19 +188,20 @@
         <p>Strona nie jest przystosowana do urządzeń mobilnych.<br>Proszę wejść przez komputer, by korzystać z panelu Deadlock.</p>
     </div>
 
+
     <!-- SIDEBAR -->
     <div class="sidebar">
         <!-- Wideo: Subway Surfers w menu -->
         <video class="brainrot-vid" src="subway_surfers.mp4" autoplay loop muted playsinline></video>
         
-        <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> dodaj zawodników</div>
-        <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> wylosuj kapitanów</div>
-        <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> coin flip</div>
-        <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> kasyno</div>
-        <div class="menu-btn" onclick="openModal('modal-stats')"><span class="icon">📊</span> statystyki</div>
-        <div class="menu-btn" onclick="toggleBrainrot()"><span class="icon">🧠</span> tryb zen</div>
-        <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> reset</div>
-        <div class="menu-btn" onclick="openAdminPanel()"><span class="icon">🔒</span> panel admina</div>
+        <div class="menu-btn" onclick="openModal('modal-add')"><span class="icon">✏️</span> <span class="menu-text">dodaj zawodników</span></div>
+        <div class="menu-btn" onclick="openModal('modal-captains')"><span class="icon">🎲</span> <span class="menu-text">wylosuj kapitanów</span></div>
+        <div class="menu-btn" id="btn-coinflip" onclick="handleCoinflipClick(event)"><span class="icon">🪙</span> <span class="menu-text">coin flip</span></div>
+        <div class="menu-btn" onclick="openModal('modal-casino')"><span class="icon">🎰</span> <span class="menu-text">kasyno</span></div>
+        <div class="menu-btn" onclick="openModal('modal-stats')"><span class="icon">📊</span> <span class="menu-text">statystyki</span></div>
+        <div class="menu-btn" onclick="toggleBrainrot()"><span class="icon">🧠</span> <span class="menu-text">tryb zen</span></div>
+        <div class="menu-btn" onclick="resetDraft()" style="margin-top: auto;"><span class="icon">🔄</span> <span class="menu-text">reset</span></div>
+        <div class="menu-btn" onclick="openAdminPanel()"><span class="icon">🔒</span> <span class="menu-text">panel admina</span></div>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -481,6 +486,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        
+        
+
         // --- OGÓLNE ZMIENNE ---
         let players = [];
         let playerCounter = 0;
@@ -571,7 +579,7 @@
         // --- Obsługa Modali ---
         function openModal(id) {
             if (id === 'modal-stats') {
-                document.getElementById(id).classList.add('active');
+                document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open');
                 fetchStats(); // Pobierz staty przy otwarciu
             } else if (id === 'modal-casino') {
                 currentUserNick = localStorage.getItem('draft_nickname');
@@ -590,7 +598,7 @@
                     return; 
                 }
 
-                document.getElementById(id).classList.add('active');
+                document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open');
                 document.getElementById('casino-title').innerText = `Witaj ${currentUserNick} w kasynie!`;
                 
                 updateWalletUI();
@@ -601,7 +609,7 @@
                 
                 if(rouletteArray.length === 0) setupRoulette();
             } else {
-                document.getElementById(id).classList.add('active');
+                document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open');
                 if (id === 'modal-add') document.getElementById('player-input').focus();
                 if (id === 'modal-coinflip') resetCoinflip();
             }
@@ -613,34 +621,24 @@
                 alert("Dokończ grę przed zamknięciem kasyna!");
                 return;
             }
-            document.getElementById(id).classList.remove('active');
+            document.getElementById(id).classList.remove('active'); document.body.classList.remove('modal-open');
         }
 
         function closeOnOutside(event) {
             if (event.target.classList.contains('modal-overlay')) {
                 if(event.target.id === 'modal-casino' && isGameActive) return; 
-                event.target.classList.remove('active');
+                event.target.classList.remove('active'); document.body.classList.remove('modal-open');
             }
         }
 
         // --- PANEL ADMINA ---
         async function openAdminPanel() {
             let pass = prompt("Podaj hasło do panelu:");
-            if(pass === null) return;
-            
-            try {
-                const configDoc = await db.collection('globalne').doc('config').get();
-                if(configDoc.exists && configDoc.data().admin_password === pass) {
-                    document.getElementById('modal-admin').classList.add('active');
-                } else {
-                    alert("Błędne hasło!");
-                    return;
-                }
-            } catch (e) {
-                alert("Błąd połączenia podczas weryfikacji hasła.");
-                console.error(e);
+            if(pass !== "2408") {
+                if(pass !== null) alert("Błędne hasło!");
                 return;
             }
+            document.getElementById('modal-admin').classList.add('active');
             
             if(document.getElementById('admin-win-players').options.length === 0) {
                 await loadAdminData();
@@ -1187,6 +1185,7 @@
             coin.style.transform = 'rotateY(0deg)';
             coin.style.backgroundImage = "url('orzel.png')";
             document.getElementById('coin-result-text').innerText = '';
+            document.getElementById('coin-result-text').style.color = '#ffd700';
             isFlipping = false;
             if(swapInterval) clearInterval(swapInterval);
         }
@@ -1211,6 +1210,8 @@
             }, 150);
 
             const isHeads = Math.random() < 0.5;
+            const isEdge = true; // 100% szans na kant
+            
             const resultImg = isHeads ? 'orzel.png' : 'reszka.png';
             const resultStr = isHeads ? 'ORZEŁ' : 'RESZKA';
 
@@ -1218,9 +1219,18 @@
                 clearInterval(swapInterval);
                 coin.classList.remove('spin-fast');
                 wrapper.classList.remove('toss-up');
-                coin.style.transform = 'rotateY(0deg)';
-                coin.style.backgroundImage = `url('${resultImg}')`;
-                resultText.innerText = resultStr;
+                
+                if (isEdge) {
+                    coin.style.transform = 'rotateY(0deg)';
+                    coin.style.backgroundImage = `url('kant.png')`; // Podmiana na obrazek kantu
+                    resultText.innerText = 'KANT';
+                    resultText.style.color = '#ff4d4d'; // Zostawiamy na czerwono, ewentualnie '#ffd700'
+                } else {
+                    coin.style.transform = 'rotateY(0deg)';
+                    coin.style.backgroundImage = `url('${resultImg}')`;
+                    resultText.innerText = resultStr;
+                }
+                
                 isFlipping = false;
             }, 2000); 
         }
@@ -1239,16 +1249,21 @@
             ev.preventDefault();
             const data = ev.dataTransfer.getData("text");
             const draggedEl = document.getElementById(data);
-            const dropzone = ev.target.closest('.dropzone');
+            
+            let dropzone = ev.target.closest('.dropzone');
+            if(!dropzone) {
+                const section = ev.target.closest('.team-section, .bottom-half');
+                if(section) dropzone = section.querySelector('.dropzone');
+            }
+
             if (dropzone && draggedEl) {
                 dropzone.appendChild(draggedEl);
                 updatePlayerColor(draggedEl, dropzone.id);
                 
-                // Aktualizujemy dropzoneId w tablicy graczy
                 const playerData = players.find(p => p.id === data);
                 if(playerData) {
                     playerData.dropzoneId = dropzone.id;
-                    saveState(); // Zapisujemy układ po każdym przeniesieniu
+                    saveState(); 
                 }
             }
         }
@@ -1402,14 +1417,13 @@
                 
                 if(val === 0) {
                     div.classList.add('r-hk');
-                    div.style.backgroundImage = `url('roulette_king.png')`;
+                    div.innerHTML = `<img src="roulette_king.png" style="max-width:90%; max-height:90%; object-fit:contain;" alt="HK">`;
                 } else if(val === 1) {
                     div.classList.add('r-am');
-                    div.style.backgroundImage = `url('roulette_arch.png')`;
+                    div.innerHTML = `<img src="roulette_arch.png" style="max-width:90%; max-height:90%; object-fit:contain;" alt="AM">`;
                 } else {
                     div.classList.add('r-shop');
-                    div.style.backgroundImage = `url('roulette_shop.png')`;
-                    div.style.backgroundSize = 'cover';
+                    div.innerHTML = `<img src="roulette_shop.png" style="max-width:90%; max-height:90%; object-fit:contain;" alt="Shop">`;
                 }
                 track.appendChild(div);
             });
